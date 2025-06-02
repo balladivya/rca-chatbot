@@ -5,3 +5,4 @@ python-dotenv
 PyMuPDF
 streamlit
 tqdm
+langchain-community
