@@ -22,7 +22,7 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 index = pc.Index(PINECONE_INDEX_NAME)
 
 def get_conversational_chain():
-    vectorstore = LangchainPinecone(index, embedding_model)
+    vectorstore = LangchainPinecone(index, embedding_model, text_key="page_content")
     retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
     prompt = PromptTemplate(
