@@ -1,6 +1,6 @@
 openai
 langchain
-pinecone-client
+pinecone
 python-dotenv
 PyMuPDF
 streamlit
