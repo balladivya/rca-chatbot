@@ -1,31 +1,18 @@
-
 import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-from pinecone import Pinecone  # SDK client
-from langchain_openai import OpenAIEmbeddings
+import streamlit as st
 from langchain_community.vectorstores import Pinecone as LangchainPinecone
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 
-# Initialize embedding and LLM
-embedding_model = OpenAIEmbeddings(model="text-embedding-ada-002", api_key=OPENAI_API_KEY)
-llm = ChatOpenAI(temperature=0, api_key=OPENAI_API_KEY)
+# Load API keys from Streamlit Cloud or local .env
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", st.secrets.get("OPENAI_API_KEY"))
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", st.secrets.get("PINECONE_INDEX_NAME"))
 
-# Initialize conversation memory
-memory = ConversationBufferMemory(
-    memory_key="chat_history",
-    return_messages=True,
-    output_key="answer"  # 👈 explicitly tell it which key to track
-)
-
+# Initialize components
+embedding_model = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(temperature=0.3, model="gpt-3.5-turbo", openai_api_key=OPENAI_API_KEY)
+memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
 def get_conversational_chain():
     vectorstore = LangchainPinecone.from_existing_index(
@@ -44,13 +31,14 @@ def get_conversational_chain():
 def answer_question_conversationally(question: str) -> dict:
     chain = get_conversational_chain()
     result = chain({"question": question})
-    return {
-        "answer": result["answer"],
-        "sources": [
-            {
-                "file": doc.metadata.get("source", "unknown"),
-                "excerpt": doc.page_content.strip()[:600]
-            }
-            for doc in result["source_documents"]
-        ]
-    }
+    answer = result["answer"]
+    sources = result.get("source_documents", [])
+
+    extracted_sources = []
+    for doc in sources:
+        extracted_sources.append({
+            "file": doc.metadata.get("source", "Unknown"),
+            "excerpt": doc.page_content[:500]
+        })
+
+    return {"answer": answer, "sources": extracted_sources}
