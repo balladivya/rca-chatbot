@@ -1,8 +1,10 @@
-openai
-langchain
-pinecone
-python-dotenv
-PyMuPDF
+pinecone>=3.0.0
+langchain>=0.1.16
+langchain-community>=0.0.36
+langchain-openai>=0.0.7
+openai>=1.0.0
+tiktoken
 streamlit
 tqdm
-langchain-community
+PyMuPDF
+python-dotenv
