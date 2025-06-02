@@ -31,15 +31,20 @@ def get_conversational_chain():
 
 def answer_question_conversationally(question: str) -> dict:
     chain = get_conversational_chain()
-    result = chain({"question": question})
-    answer = result["answer"]
-    sources = result.get("source_documents", [])
+    
+    # Only return what LangChain expects to store in memory
+    raw_result = chain({"question": question})
+    
+    answer = raw_result["answer"]
+    sources = raw_result.get("source_documents", [])
 
-    extracted_sources = []
-    for doc in sources:
-        extracted_sources.append({
+    # This is for UI — not fed back to the chain
+    extracted_sources = [
+        {
             "file": doc.metadata.get("source", "Unknown"),
             "excerpt": doc.page_content[:500]
-        })
+        }
+        for doc in sources
+    ]
 
     return {"answer": answer, "sources": extracted_sources}
