@@ -25,7 +25,8 @@ def get_conversational_chain():
         llm=llm,
         retriever=retriever,
         memory=memory,
-        return_source_documents=True
+        return_source_documents=True,
+        output_key="answer"
     )
 
 def answer_question_conversationally(question: str) -> dict:
